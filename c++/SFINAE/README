@@ -1,6 +1,11 @@
-SFINAE - substituion failure is not an error is a compile time
+SFINAE - substituion failure is not an error is a compile time metaprogramming
+technique. When a substitution error occurs during compile time, it will not
+produce an error, but simply soldier on.
 
+NOTE: sfinae can only be applied on function specialization. For example, you 
+cannot use it to selectively create compile time errors for member variables of
+a class (so that some instances of the class has some member variable while others
+do not). Doing that using SFINAE is show in the sfinae.cpp.
 
-Default - makefile pass a flag into the code macros
-
-SFINAE - doing the same thing
+Reference:
+1. https://eli.thegreenplace.net/2014/sfinae-and-enable_if/
