@@ -1,0 +1,74 @@
+Lock-free programming is any multi-threaded program where any one thread cannot 
+block the progress of another. It has a higher, but predictable latency under
+high levels of contention. With locks, the latency is the expected number of
+contending threads and average time spent in the critical section. For lock-free,
+this can be modeled similarly to wireless transmission contention (e.g. ALOHA)
+with no backoffs. During light contention (e.g., single-reader, multi-writer), 
+if the critical section takes only a short amount relative to the cost of 
+context switching, lock-free is more efficient. 
+
+Expected latency for locking: need math & graphs
+
+Expected latency for lock-free: need math & graphs
+
+Things to be aware of when programming lock-free:
+(1) atomicity of operation (e.g, aligned reads/writes)
+
+(2) memory barriers
+		For multi-threaded programs, this may occur:
+
+		Thread 1
+			read x
+			write y
+
+		Thread 2
+			read y
+			write x
+
+		Above, there is no memory dependency between x/y so the processor or 
+		compiler may reorder at will, unless memory barriers are put in place. 
+		While Intel/AMD does not re-order writes with each other, ARM/PowerPC
+		make no such guarantees.
+
+		Acquire-Semantics: prevent memory re-ordering of a read operation with 
+											 read/write operation of those that follow it in 
+											 program order
+		Release-Semantics: prevent memory re-ordering of a write operaiton with
+											 read/write operation of those that precede it in 
+											 program order
+
+		Even with acquire-release semantics, a preceding write can still be moved after
+		a read. Most arch provide an expensive operation called "sync" to prevent that.
+		It is expensive, because it most likely flushes the entire pipeline of a 
+		processor until the write operation is complete. 
+
+(3) multi-writer?
+		YES: be very aware of ABA problems
+
+(4) multi-core arch have sequential consistency?
+	  YES: C++11 atomics
+	  NO: C++11 atomics with memory barriers
+
+(5) Read-Modify-Write and Compare-And-Swap operations?
+		YES: be very aware of ABA problem 
+		NO: it may not be possible to implement lock-free efficiently (livelock)
+
+In normal operations, lockfree has lower throughput and higher average latency
+then multithreaded programs that do locking. This is because each CPU is 
+repeatedly trying to read/write some shared memory. It is immune to deadlock,
+but susceptible to livelock if the writers contend or the critical section
+takes a long time to finish. 
+
+CODE EXAMPLE
+
+1) C++11 atomics.
+	 a. memory-ordering
+	 b. atomicity on non-native types
+
+2) Lock-free 
+	 a. single writer, single reader
+	 b. multi writer, multi reader (Michael-Scott, boost/lockfree/queue)
+
+References
+1. https://preshing.com/20120612/an-introduction-to-lock-free-programming/
+2. https://preshing.com/20120515/memory-reordering-caught-in-the-act/

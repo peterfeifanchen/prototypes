@@ -1,0 +1,18 @@
+Typename in C++ is used to specify that the identifier following it is a type. This
+disambiguates between:
+
+template<class T> Class myClass{
+	typename T::SubType * ptr;
+	...
+};
+
+and
+
+template<class T> Class myClass{
+	T::SubType * ptr;
+	...
+};
+
+In the former, ptr is a type T::SubType. In the latter, it is a multiplication 
+of T::SubType with ptr.
+
