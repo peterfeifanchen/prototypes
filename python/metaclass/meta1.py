@@ -1,7 +1,24 @@
 #!/usr/bin/python
 
+# In python, everything is an object. And every object has a type. A class is an 
+# object with type 'type'. An instance of a class is an object with type of the 
+# class. 
+
+# When a class is defined as a type, it is a metaclass. Classes that 
+# inherit from metaclasses have the type of the metaclass. In a way, the class
+# is an object instance of the metaclass. 
+
+isinstance(object, type)
+# True
+isinstance(type, object)
+# True
+type(object)
+# 'type'
+
 ###################################
 # type as a function
+# if type(arg) return type of arg
+# if type(arg, bases, dict) returns new class object of type 'type'
 class Foobar(object):
     foobar = 'value'
     pass
@@ -43,6 +60,19 @@ Complex.__base__
 #<class 'object' >
 type(Complex)
 #<class '__main__.Meta'>
+Complex.foobar
+# 'value'
+isinstance(Complex, Meta)
+# True
+obj = Complex()
+isinstance( obj, Complex )
+# True
+isinstance( obj, Meta )
+# False
+isinstance( obj, type )
+# False
+isinstance( obj, object )
+# True
 
 Meta.__init__
 #<slot wrapper '__init__' of 'type' objects>
@@ -50,7 +80,7 @@ Meta.__base__
 #<class 'type'>
 type(Meta)
 #<class 'type'>
-
+breakpoint()
 
 # slots are the fields in a struct for each magic method define
 # for a class. These struct fields are pointers to each of these
@@ -63,7 +93,4 @@ type(Meta)
 # when you evaluate class lookup 'Complex.foobar', this equates to 
 #   1) return value if it exists in 'Complex.__dict__'
 #   2) return 'Complex.__getattr__('foobar')
-
-# in essence, just as foo is an instance of class Foobar, Complex is
-# an instance of the metaclass Meta. 
 ####################################
