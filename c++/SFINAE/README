@@ -9,3 +9,5 @@ do not). Doing that using SFINAE is show in the sfinae.cpp.
 
 Reference:
 1. https://eli.thegreenplace.net/2014/sfinae-and-enable_if/
+2. https://www.bfilipek.com/2016/02/notes-on-c-sfinae.html
+3. http://jguegant.github.io/blogs/tech/sfinae-introduction.html
