@@ -6,7 +6,8 @@
 
 # When a class is defined as a type, it is a metaclass. Classes that 
 # inherit from metaclasses have the type of the metaclass. In a way, the class
-# is an object instance of the metaclass. 
+# is an object instance of the metaclass. You can see metaclasses as a class of
+# a class.
 
 isinstance(object, type)
 # True
