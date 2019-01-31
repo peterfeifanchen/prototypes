@@ -16,3 +16,23 @@ template<class T> Class myClass{
 In the former, ptr is a type T::SubType. In the latter, it is a multiplication 
 of T::SubType with ptr.
 
+
+Typename vs. Class
+-------------------------------------
+
+template< class T > class Foo {};
+template< typename T > class Foo {};
+
+There is no difference in the above case. However when the class contains a nested
+type that depends on a template parameter, typename must be used.
+
+template<typename T> 
+class Foo {
+	typedef typename T::bar bar_t;
+};
+
+Further, if it is a template of a template, class must be used.
+template< template< typename, typename > class Container, typename Type >
+
+Reference
+1. https://stackoverflow.com/questions/2023977/difference-of-keywords-typename-and-class-in-templates
