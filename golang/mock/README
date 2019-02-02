@@ -1,0 +1,11 @@
+Golang mock is a package that allows you to mock methods of an interface.
+
+1) mockgen to generate mock code for the interface you hope to mock
+2) create gomock.Controller (which takes in testing.T)
+3) EXPECT() to setup expectations and return values
+4) Finish() to assert expectations (not idempotent, asserts that expected
+	 calls were made, does not assert correctness of the output of mock)
+
+Reference
+1. https://blog.codecentric.de/en/2017/08/gomock-tutorial/
+2. https://godoc.org/github.com/golang/mock/gomock
