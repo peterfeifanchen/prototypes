@@ -18,15 +18,19 @@ func TestUse(t *testing.T) {
 	mockDoer := mocks.NewMockDoer(mockCtrl)
 	testUser := &User{Doer: mockDoer}
 
-	// Expect Do to be called once with the following parameters and return nil at the end
-	mockDoer.EXPECT().SendTo("127.0.0.1", 22, "Hello GoMock").Return(nil).Times(1)
+	// Expect Do to be called once with the following parameters and return nil at the end.
+	// Each EXPECT() is one singular instance of an expected call. Notice testUser is in
+	// different order. Order between EXPECT must by specified (see TestUse4).
+	mockDoer.EXPECT().SendTo("127.0.0.2", 22, "Hello GoMock").Return(nil).Times(1)
+	mockDoer.EXPECT().SendTo(NewIPMatcher(), gomock.Not(0), gomock.Any()).Return(nil)
 	// Expect Do to be called once with the following parameters and return "ok" at the end
-	mockDoer.EXPECT().ReceiveFrom("127.0.0.1", 22).Return("ok").Times(1)
+	mockDoer.EXPECT().ReceiveFrom("127.0.0.2", 22).Return("ok").Times(1)
 
 	// If these calls were absent, mockDoer's sendTo/receiveFrom would not be called and
 	// mockCtrl.Finish would assert that error
 	testUser.SendTo("127.0.0.1", 22, "Hello GoMock")
-	msg := testUser.ReceiveFrom("127.0.0.1", 22)
+	testUser.SendTo("127.0.0.2", 22, "Hello GoMock")
+	msg := testUser.ReceiveFrom("127.0.0.2", 22)
 
 	if msg != "ok" {
 		t.Fatal("Did not receive ok")
