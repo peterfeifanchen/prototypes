@@ -1,0 +1,175 @@
+RPMs place all the files of a software package in a single bundle. This bundle
+contains information on where the files go, short description of the package, 
+version number and its dependencies for 1) build and 2) running. 
+
+An RPM is created by installing in a local directory the entire workspace that
+mirrors the workspace of its target. For example, when you specify that an RPM
+includes /usr/lib/python2.7/<file>, RPM build process will compile the project
+into <working directory>/usr/lib/python2.7/<file> and install it on the target 
+machine at /usr/lib/ptyhon2.7/<file>.
+
+Building an RPM is done by the tool "rpm-build". It takes in a spec file which
+specifies all the magic. RPMs have a rigid name structure composed of
+Name-Version-Release. 
+
+SECTIONS
+====================================================================================
+
+Source files are defined with Source0: [name], Source1: [name], etc... If the 
+source is compressed, it will be extracted. However if it is a URL, it will not
+be downloaded. "NoSource: [name]" can be used to skip including hte source file
+of a particular item. Similarly, "PatchN:" can be defined.
+
+%prep section defines the commands to prepare for a build. Usually this is set 
+to the command %setup -q. It can automatically extract tar, zip, etc...compressed
+files. Further, patches can be applied %patch1, %patch2, etc...
+
+%build section performs the build, such as "./configure; make". The macro %configure
+can be used to replace "./configure", which also will set environment variables 
+often used in configure scripts. "rpm --eval" (e.g., rpm --eval %buildroot) is used 
+to see how %configure expands or any macro for that matter.
+
+%install installs the software built in %build. If this is handled by a makefile,
+you just need to call "make install PREFIX=$RPM_BUILD_ROOT/usr"
+
+%clean performs the clean up comamnds after an rpmbuild. 
+
+MACROS
+====================================================================================
+%[term] are macros. They are defined in /usr/lib/rpms/macros. Builtins can be found
+with "rpm -ql rpm". They can be customly defined by
+
+	%global|define  <name>[(opts)] <body>
+	%define => local macro, apply to specific part of SPEC file, expanded lazily
+	%global => global macro, apply to entire SPEC file, expanded at definition time. 
+	This means that even if the macro is commented out with %%, it may still have
+	side-effects.
+
+Custom macros can be used to override in the ~/.rpmmacros file. Any changes will 
+affect every build. (e.g., %_topdir to change the rpmbuild default directory of
+%buildroot. By default this is ~/rpmbuild). 
+
+Sometimes, packages come with their own set of macros to be installed in 
+/usr/lib/rpm/macros.d/ and can be queried and shown (e.g. Python):
+	
+	rpm -ql python2-rpm-macros
+	rpm --showrc | grep python2
+	rpm --eval %{__python2} => /usr/bin/python2
+	rpm --eval %{python2_sitearch} => /usr/lib64/python2.7/site-packages
+
+STEPS
+====================================================================================
+
+The steps to building an RPM is as follows:
+
+1) Where <working directory> is can be controlled by adding the following: 
+			%_tmppath <working directory>/tmp
+			Buildroot: %{_tmppath}/%{name}-%{version}-root
+	 Once this is done, scripts or commands within the spec file will have access
+	 to it via the environment variable RPM_BUILD_ROOT. Alternatively this may be
+	 override by passing "--buildroot" in the commandline to "rpmbuild". 
+	 RPM system assumes 5 subdirectories: BUILD, RPMS, SOURCES, SPEC, SRPMS
+	
+2) Modify makefile/automake so it places the files in a subdirectory of
+	 <working directory>. One way to do this is to use the variety of exported
+	 variables during an rpmbuild to be used by your Makefile. 
+
+	 For example, $RPM_BUILD_ROOT for files. Then in your Makefile, you can have:
+		
+			ifdef RPM_BUILD_ROOT
+			installdir = $(RPM_BUILD_ROOT)/$(RPM_PACKAGE_NAME)-$(RPM_PACKAGE_VERSION)
+			else
+			installdir = ... (normal install directory)
+			endif
+
+3) Create a spec file. In a spec file, anything starting with % is a macro, usually
+	 defined in /usr/lib/rpm/macros. For seeing intermediate outputs that are deleted
+	 at end of rpm build, you can add "exit 1" to your spec file in the appropriate
+	 section or "set; exit 1" to spit out a list of defined env variables. Finally you
+	 can use "bash -i" to stop rpmbuild and drop to a shell. Finally, you may use
+	 %config(noreplace). rpmlint can be used to check spec file sanity. Simply use by
+	 rpmlint [SPECFILE].
+
+4) Build your RPM and SRPM:
+		cp spec to <working directory>/SPECS/
+		tar -zcvf <working directory/SOURCES/*.tar.gz [pkgName] (Optional)
+		cd <working directory>/SPECS/
+		rpmbuild -ba <working directory>/SPECS/[specfile]
+
+	 NOTE: This can be a source RPM. Source RPM allows it to be portable 
+				 across different architectures.
+	
+				 For SRPM: rpmbuild -bs [SPECFILE]
+	 NOTE: This can be a binary RPM. 
+	
+				 For RPM: rpmbuild -bb [SPECFILE] 
+												OR
+									rpmbuild --rebuild [PATH TO SRPM]
+									This installs the source into rpm_wd_structure, building the 
+									installed elements and cleaning up after. To retain and not clean
+									up, use "--recompile" instead of "--rebuild".
+	 NOTE: rpmbuild expects the directory and file structure seen in rpm_wd_structure/
+				 The resulting RPM will be in rpm_wd_structure/RPMS/YOURACH
+	 NOTE: sanity of rpm can be checked with
+				 rpmlint [RPM]
+
+5) You may need to sign your RPMs with GPG. It can be signed multiple times to 
+	 create chain of custody.
+	 rpm --addsign [RPM] => enter pass phrase
+	 rpm --resign [RPM] => enter pass phrase
+	 rpm --checksig [RPM]
+
+6) Install on remote machine
+	 SRPM: rpm -Uvh [SRPM]
+
+TUTORIAL
+====================================================================================
+See rpm_wd_structure bello, pello and cello. 
+
+ADVANCED
+====================================================================================
+Epoch
+-----
+If a package foo has Epoch: 1 Version: 1.0 and another packages foo as Version: 2.0.
+The omitted Epoch has default value 0. The first package would win out over the 
+traditional incremental NAME-VERSION-RELEASE marker. 
+
+Scriplet
+--------
+Modifications to the system once package is installed. For example, interactions 
+with systemd for services. Directive macros include %pre, %post, %preun, %postun
+which specify actions to take for installation pre/post and uninstallation pre/post.
+
+Interpreter
+----------
+For specific interpreter instead of default bash, you can use '-p [Interpreter]'.
+For example: %post -p /usr/bin/python3 print("This is {} code".format("python"))
+
+Conditionals
+------------
+%if [expr]
+...
+%else
+...
+%endif
+
+Example. First is testing whether we are on RHEL6 where %rhel will be defined. The
+second has the same meaning as ?el6 expands to the same. The third tests whether the
+fedora version is > 19. The fourth tests an AND condition between the two macros,
+which if both defined evaluates to true. 
+
+%if 0%{?rhel} == 6
+%if 0%{?el6} 
+%if 0%{?fedora} >= 19
+%if 0%{?milestone:1}%{?revision:1} != 0
+
+Specialized if that tests arch and os
+%ifarch/ifnarch [arch e.g., alpha]
+%ifos [os e.g., linux]
+
+REFERENCES
+====================================================================================
+1. https://websites.pmc.ucsc.edu/~dmk/notes/RPMs/Creating_RPMs.html
+2. https://docs.fedoraproject.org/ro/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch09s03s02.html
+3. https://rpm-packaging-guide.github.io/
+4. https://rpm-guide.readthedocs.io/en/latest/rpm-guide.html

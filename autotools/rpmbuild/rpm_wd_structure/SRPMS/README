@@ -1,0 +1,2 @@
+Rather than a binary RPM which lands in RPMS dir, if a source RPM is specified by
+the correct flags. They come here.

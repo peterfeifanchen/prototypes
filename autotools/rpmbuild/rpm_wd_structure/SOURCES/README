@@ -1,0 +1,2 @@
+Compressed source archives and patches go here. This is where rpmbuild will look for
+them. Usually the Makefile will install them here in %prep I think.
