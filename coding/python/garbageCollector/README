@@ -1,0 +1,19 @@
+Test Case
+
+x = []
+x.append( x )
+
+x_address = id( x )
+print( PyObject.from_address( x_address ).refcnt )
+
+del x
+print( PyObject.from_address( x_address ).refcnt )
+
+What will the code above print?
+What does del do?
+How would you build python garbage collector?
+
+
+Reference
+==========================================================================
+https://blog.hakril.net/articles/0-understanding-python-by-breaking-it.html

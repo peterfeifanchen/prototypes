@@ -1,6 +1,9 @@
 Lock-free programming is any multi-threaded program where any one thread cannot 
 block the progress of another. It has a higher, but predictable latency under
-high levels of contention. With locks, the latency is the expected number of
+high levels of contention. 
+
+
+With locks, the latency is the expected number of
 contending threads and average time spent in the critical section. For lock-free,
 this can be modeled similarly to wireless transmission contention (e.g. ALOHA)
 with no backoffs. During light contention (e.g., single-reader, multi-writer), 
@@ -72,3 +75,6 @@ CODE EXAMPLE
 References
 1. https://preshing.com/20120612/an-introduction-to-lock-free-programming/
 2. https://preshing.com/20120515/memory-reordering-caught-in-the-act/
+3. https://preshing.com/20121019/this-is-why-they-call-it-a-weakly-ordered-cpu/
+4. https://preshing.com/20130823/the-synchronizes-with-relation/
+5. https://preshing.com/20131125/acquire-and-release-fences-dont-work-the-way-youd-expect/
