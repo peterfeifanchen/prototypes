@@ -14,10 +14,10 @@ func mapReturnByRef() map[string][]byte {
 
 func main() {
 	// Are maps passed by reference?
-	m := make(map[string][]byte)
-	mapPassByRef(m)
+	mOriginal := make(map[string][]byte)
+	mapPassByRef(mOriginal)
 	fmt.Println("newkey1:", string(m["newkey1"]))
 
-	m = mapReturnByRef()
+	mOriginal = mapReturnByRef()
 	fmt.Println("newkey2:", string(m["newkey2"]))
 }
