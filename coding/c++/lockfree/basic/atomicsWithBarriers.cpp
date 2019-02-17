@@ -6,22 +6,6 @@
 
 sem_t sem1, sem2, restart;
 
-// Even though operations on int is word-aligned and by default atomic, we use 
-// C++ atomic for completeness and to showcase the ability for atomics to enforce
-// memory ordering. 
-//			memory_order_relaxed: 
-//					ensure operations are atomic, do not impose additional 
-//					memory order constraints.
-//			memory_order_acquire
-//			memory_order_release: on PowerPC, lwsync
-//						                on ARM, dmb
-//														on X86/64, mfence
-//			memory_order_acq_rel: memory_order_acquire + memory_order_release
-//			memory_order_seq_cst: full memory fence
-// Finally, C++11 atomics does not guarantee lock-free on all platforms. You have to
-// call std::atomic<>::is_lock_free to check.
-
-// std::atomic<int> X, Y, r1, r2;
 int X, Y, r1, r2;
 
 void *thread1Func( void *param ) {
@@ -34,15 +18,9 @@ void *thread1Func( void *param ) {
 		
 				// -------write X, read Y---------------------
 
-				// Prevents Compiler Reordering
-				// In this mode, X86/64 arch does not guarantee that there will be 
-				// sequential consistency between thread1Func and thread2Func's operations
-				// on X, Y, r1, r2.
-				X = 1;
-				// X.store( 1, std::memory_order_relaxed )
+				X.store( 1, std::memory_order_relaxed )
 				asm volatile( "" ::: "memory" ); 
-				r1 = Y;
-				// r1.load( Y, std::memory_order_relaxed )
+				r1.load( Y, std::memory_order_relaxed )
 				
 				// Prevents Memory Reordering
 				// A full memory fence will prevent StoreLoad reordering in arch and 
@@ -68,7 +46,7 @@ void *thread2Func( void *param ) {
 		std::mt19937 g1( seed ); // MersenneTwister pseudo-random generator
 		for (;;) {
 				sem_wait( &sem1 );
-				while( g1() % 8 != 0 ) {} // Short random delay
+				while( g1() % 8 != 0 ) {} // Short random delay to allow thread interleaving
 		
 				// -------write Y, read X---------------------
 

@@ -1,0 +1,34 @@
+Theoretical Modeling
+====================================================================================
+The performance of lockfree algorithms is heavily dependent on the time spent in
+critical section and on the cost of context-switches for locking and putting different
+threads to sleep. Lockfree is immune to deadlock but susceptible to livelock if there
+are a lot of contention or the critical section takes a long time.
+
+Latency - higher latency but more predictable under high levels of contention.
+	a. Locks - the average latency should be 0.5 * N * quanta where N is the number of
+					   threads. The probability distribution of latency in units of quantas is 
+						 then a binomial like distribution. Here quanta is either the OS quanta
+						 given to a thread before regaining control or the time spent in the 
+						 critical section.
+	b. Lockfree - the average and distribution of the latency can be modeled similarly 
+								to wireless transmission (e.g. ALOHA) where contention causes 
+								retries with no backoffs.
+
+Throughput - Throughput for lockfree should be lower than with locks under high 
+						 contention as no redundant work is being done. Under low contention, 
+						 the performance should be very similar biasing slightly to lock-free 
+						 since we do not incur locking overhead.
+  a. Locks - the throughput 
+	b. Lockfree - the throughput should 
+
+
+Experiment
+=====================================================================================
+Latency. Launch 8 threads (7 readers, 1 writer). Measure the amount of time between
+				 inovcation of a reader thread 20 times.
+Throughput. Launch 8 threads (7 reader, 1 writer). Measure the amount of write 
+				 throughput and amount of aggregate read throughput.
+
+Run above experiments 100 times.
+Plot latency/throughput with CDFs for each latency or throughput level. 

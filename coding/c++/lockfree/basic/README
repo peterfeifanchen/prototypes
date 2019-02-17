@@ -1,0 +1,43 @@
+Memory Barriers
+====================================================================================
+
+Thread 1                  Thead 2
+	Read X										Read Y
+	Write Y										Write X
+
+Because there is no memory dependency between x and y. Therefore memory operations
+can be reordered by compilers or the architecture. For compilers, this is due to 
+optimizations. If it is architecture, this is due to the memory hierarchy. When 
+thread 1 running on core 1 modifies Y, depending on the cache-coherence of the arch,
+this may or may not reach thread 2 running on core 2. A full memory barrier will 
+issue a "sync"-like instruction to the arch which produces sequential consistency. A
+lighter "lsync"-like instruction to the arch would produce acquire_release 
+semantics.
+
+C++ atomics support:
+	memory_order_relaxed
+	memory_order_consume
+	memory_order_release - PowerPC (lwsync), ARM (dmb), x86_64 (mfence)
+	memory_order_acquire
+	memory_order_acquire_release
+	memory_order_seq_cst
+
+	asm volatile( "" ::: "memory" ) - prevent compiler reordering
+	asm volatile( "mfence" ::: "memory" ) - full mfence memory barrier (sync)
+
+Acquire/Release Semantics
+====================================================================================
+Acquire-Semantics: prevent memory re-ordering of a read operation with read/write
+									 operation of those that follow it in program order
+Release-Semantics: prevent memory re-ordering of a write operation with read/write
+									 operation of those that precede it in program order
+
+Even with acquire-release semantics, a preceding write can still be moved after a 
+read. Most arch provide an expensive operation called "sync" to prevent that. This
+operation is expensive because it most likely flushes the entire pipeline of a CPU
+until the write operation is complete.
+
+Happens-before relationship between threads are established on a shared variable if
+one thread release and another acquires. The release write will be visible to the
+acquire. 
+
