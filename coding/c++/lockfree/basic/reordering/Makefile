@@ -1,3 +1,5 @@
+ASSEMBLYFLAGS=-S -fverbose-asm -O3
+
 reordering: reordering.cpp
 	g++ -lpthread -O2 $< -o $@ 
 
@@ -12,3 +14,9 @@ reorderingACQREL: reordering.cpp
 
 reorderingACQRELFENCE: reordering.cpp
 	g++ -lpthread -O2 -DACQRELFENCE $< -o $@
+
+assembly:
+	g++ -c -std=c++11 $(ASSEMBLYFLAGS) acqrel.cpp relaxed.cpp seqcst.cpp
+
+clean:
+	rm -rf *.o reordering reorderingSAMECPU reorderingMFENCE reorderingACQREL reorderingACQRELFENCE

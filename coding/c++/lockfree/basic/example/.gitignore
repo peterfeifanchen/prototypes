@@ -1,0 +1,5 @@
+noatomicDIFFNODE
+noatomicSAMENODE
+atomicRELAXED
+atomicACQREL
+trivially_copyable

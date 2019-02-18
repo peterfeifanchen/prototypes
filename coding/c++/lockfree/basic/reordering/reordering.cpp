@@ -45,9 +45,14 @@ void *thread1Func( void *param ) {
 
 	  // -------write X, read Y---------------------
       #ifdef ACQREL
-      // happens-before with thread2 X load. NOTE: simply using memory_order_release
-      // her is insufficient. 
-      X.store( 1, std::memory_order_acq_rel );
+      // Prevent reodering with X load as memory_order_acquire semantics can be 
+      // apparently applied to both stores and loads whereas memory_order_release
+      // semantics are only applied to stores. Further while memory_order_seq_cst
+      // and memory_order_acq_rel can also be applied. This was apparently not
+      // necessary. Similarly release or acquire semantics are not required for Y
+      // load. Finally, in this case, apparently is enough to stop memory 
+      // reordering. 
+      X.store( 1, std::memory_order_acquire );
       #else
 	  X.store( 1, std::memory_order_relaxed );
       #endif
@@ -64,13 +69,7 @@ void *thread1Func( void *param ) {
 	  asm volatile( "" ::: "memory" );
       #endif
 	  
-      #ifdef ACQREL
-      // happens-before with thread2 Y store. NOTE: simply using memory_order_acquire
-      // here is insufficient
-      r1 = Y.load( std::memory_order_acq_rel );
-      #else
       r1 = Y.load( std::memory_order_relaxed );
-      #endif
 
       sem_post( &restart );
    }
@@ -106,9 +105,14 @@ void *thread2Func( void *param ) {
 				
 	  // -------write Y, read X---------------------
       #ifdef ACQREL
-      // happens-before with thread1 Y load. NOTE: simply using memory_order_release
-      // her is insufficient. 
-      Y.store( 1, std::memory_order_acq_rel );
+      // Prevent reodering with X load as memory_order_acquire semantics can be 
+      // apparently applied to both stores and loads whereas memory_order_release
+      // semantics are only applied to stores. Further while memory_order_seq_cst
+      // and memory_order_acq_rel can also be applied. This was apparently not
+      // necessary. Similarly release or acquire semantics are not required for X
+      // load. Finally, in this case, apparently is enough to stop memory 
+      // reordering. 
+      Y.store( 1, std::memory_order_acquire );
       #else
 	  Y.store( 1, std::memory_order_relaxed );
       #endif
@@ -125,13 +129,7 @@ void *thread2Func( void *param ) {
 	  asm volatile( "" ::: "memory" ); 
       #endif
       
-      #ifdef ACQREL
-      // happens-before with thread1 X load. NOTE: simply using memory_order_acquire
-      // here is insufficient
-      r2 = X.load( std::memory_order_acq_rel );
-      #else
 	  r2 = X.load( std::memory_order_relaxed );
-      #endif
 				
 	  sem_post( &restart );
    }
