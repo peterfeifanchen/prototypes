@@ -8,11 +8,16 @@ Thread 1                  Thead 2
 Because there is no memory dependency between x and y. Therefore memory operations
 can be reordered by compilers or the architecture. For compilers, this is due to 
 optimizations. If it is architecture, this is due to the memory hierarchy. When 
-thread 1 running on core 1 modifies Y, depending on the cache-coherence of the arch,
-this may or may not reach thread 2 running on core 2. A full memory barrier will 
-issue a "sync"-like instruction to the arch which produces sequential consistency. A
-lighter "lsync"-like instruction to the arch would produce acquire_release 
-semantics.
+thread 1 running on cpu 1 modifies Y, depending on the cache-coherence of the arch,
+this may or may not reach thread 2 running on cpu 2. 
+
+NOTE: Reordering will not occur if run on the same CPU, but will occur if run on 
+different CPU of same node or CPU on different nodes. Run reordering/reordering.cpp
+with "make reorderingSAMECPU" for example. 
+
+A full memory barrier will issue a "sync"-like instruction to the arch which 
+produces sequential consistency. A lighter "lsync"-like instruction to the arch 
+would produce acquire_release semantics.
 
 C++ atomics support:
 	memory_order_relaxed
@@ -24,13 +29,14 @@ C++ atomics support:
 
 	asm volatile( "" ::: "memory" ) - prevent compiler reordering
 	asm volatile( "mfence" ::: "memory" ) - full mfence memory barrier (sync)
+    See reordering/reordering.cpp "make reorderingMFENCE" for example.
 
 Acquire/Release Semantics
 ====================================================================================
 Acquire-Semantics: prevent memory re-ordering of a read operation with read/write
-									 operation of those that follow it in program order
+				   operation of those that follow it in program order
 Release-Semantics: prevent memory re-ordering of a write operation with read/write
-									 operation of those that precede it in program order
+			       operation of those that precede it in program order
 
 Even with acquire-release semantics, a preceding write can still be moved after a 
 read. Most arch provide an expensive operation called "sync" to prevent that. This
