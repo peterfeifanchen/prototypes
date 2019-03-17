@@ -47,3 +47,6 @@ Happens-before relationship between threads are established on a shared variable
 one thread release and another acquires. The release write will be visible to the
 acquire. 
 
+
+References
+====================================================================================

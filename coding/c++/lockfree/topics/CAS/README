@@ -1,0 +1,74 @@
+CAS
+====================================================================================
+Compare-And-Swap is necessary for lock-free. It follows the following general 
+structure:
+
+T CAS( T * pAddr, T nExpected, T nNew ) {
+   atomically {
+      if ( *pAddr == nExpected ) {
+         *pAddr = nNew ;
+         return nExpected ;
+      } else {
+         return *pAddr;
+      }
+   }
+}
+
+When there is multi-writer, must beware of ABA. This is caused by a hidden action that 
+is sandwiched between a delete and restore of the element being compared as part of 
+CAS. Because the address comparision would still pass, this can lead to unexpected
+behaviors. Some examples include
+   1) Freeing memory and the reallocating may result in an efficient allocator giving
+      back the same memory. Resulting in CAS comparison that passes with different values
+      that the pointers point to.
+   2) Modifying the head of a queue (A->B->C). If CAS is performed on the head A while 
+      another thread simultaneously removes A and B before adding A back (A->C). CAS
+      of the first thread will replace A at the head with B (as it still thinks B was
+      next). However B has been freed, leading to undefined behavior.
+
+Possible solutions are:
+   1) Defer reclamation of freed memory in languages with an automatic garbage collector.
+      In the first case above, this would prevent the same address from being returned and
+      in the second case, allow B to still exist. However, this requires the GC to be 
+      lock-free or at least exist as a single instance. Also this does not provide the 
+      possibility of linearizability across operations from the threads.
+   2) Double-word CAS. Which is CAS with double the word size of the machine. This allows
+      CAS to store an integer tag, providing versioning.
+   3) LL/SC (Load-linked, store-conditional support in arch. This is available for ARM, but
+      not X86. It would require modifications to the cache line (adding an extra-bit that 
+      is linked during LL and checked with SC, which is cleared if the cache line was touched). 
+      However, because of its cache-line implementation, it suffers from false-sharing, 
+      preventing possible nesting of LL/SC calls to different addresses and introducing the
+      possibility of livelock. 
+
+In C++ the architectural differences of CAS on the platform are abstracted away via the 
+following API:
+
+1) atomic_exchange/atomic_exchange_explicit
+   Atomically replaces the value pointed to by obj with the value of desr and returns the 
+   value obj held previously. For explicit, the memory model must be specified.
+2) atomic_compare_exchange_weak/atomic_compare_exchange_weak_explicit
+3) atomic_compare_exchange_strong/atomic_compare_exchange_strong_explicit
+   Atomically compares the object representation value representation of the object pointed 
+   to by obj with that of the object pointed to by expected, and if those are bitwise-equal, 
+   replaces the former with desired (performs read-modify-write operation). Otherwise, loads 
+   the actual value pointed to by obj into *expected (performs load operation). Copying is 
+   performed as if by std::memcpy. This is susceptible to ABA. The difference between weak
+   and strong is that weak is allowed to act as if *obj != *expected, even when they are.
+   On some arch, this allows performance to be a bit better. Thus weak must be called in a 
+   loop to wait for convergence. On X86, strong/weak is likely the same. By default, the 
+   memory-model is sequential consistency for non-explicit. For explicit, this must be specified. 
+
+
+Implementation
+========================================================================================
+Use atomic_compare_exchange_weak/strong to show ABA problem.
+Use atomic_compare_exchange_weak/strong to redo example.
+Use atomic_exchange to do a mutex lock.
+Use atomic_exchange to redo example.
+
+References
+====================================================================================
+1) https://kukuruku.co/post/lock-free-data-structures-basics-atomicity-and-atomic-primitives/
+2) https://en.wikipedia.org/wiki/ABA_problem
+3) https://en.cppreference.com/w/cpp/atomic/atomic_compare_exchange

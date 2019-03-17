@@ -1,3 +1,7 @@
+Literature
+====================================================================================
+https://kukuruku.co/post/lock-free-data-structures-basics-atomicity-and-atomic-primitives/
+
 Theoretical Modeling
 ====================================================================================
 The performance of lockfree algorithms is heavily dependent on the time spent in
