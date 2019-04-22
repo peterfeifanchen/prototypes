@@ -2,18 +2,20 @@ Memory Barriers
 ====================================================================================
 
 Thread 1                  Thead 2
-	Read X										Read Y
-	Write Y										Write X
+	Write X										Write Y
+	Read Y										Read X
 
 Because there is no memory dependency between x and y. Therefore memory operations
 can be reordered by compilers or the architecture. For compilers, this is due to 
 optimizations. If it is architecture, this is due to the memory hierarchy. When 
-thread 1 running on cpu 1 modifies Y, depending on the cache-coherence of the arch,
-this may or may not reach thread 2 running on cpu 2. 
+thread 1 running on cpu 1 modifies Y, depending on the arch, its effects can be
+delayed past operations on other differet memory addresses (as if the operations
+have changed its program order in the processor).
 
 NOTE: Reordering will not occur if run on the same CPU, but will occur if run on 
 different CPU of same node or CPU on different nodes. Run reordering/reordering.cpp
-with "make reorderingSAMECPU" for example. 
+with "make reorderingSAMECPU" for example. This is because the write operations
+would not be able to be delayed past the read operations from the other thread.
 
 A full memory barrier will issue a "sync"-like instruction to the arch which 
 produces sequential consistency. A lighter "lsync"-like instruction to the arch 
@@ -50,3 +52,11 @@ acquire.
 
 References
 ====================================================================================
+1. https://www.youtube.com/watch?v=c1gO9aB9nbs
+2. https://www.youtube.com/watch?v=CmxkPChOcvw
+3. https://kukuruku.co/post/lock-free-data-structures-memory-model-part-3/
+4. https://preshing.com/20120612/an-introduction-to-lock-free-programming/
+5. https://preshing.com/20120515/memory-reordering-caught-in-the-act/
+6. https://preshing.com/20121019/this-is-why-they-call-it-a-weakly-ordered-cpu/
+7. https://preshing.com/20130823/the-synchronizes-with-relation/
+8. https://preshing.com/20131125/acquire-and-release-fences-dont-work-the-way-youd-expect/

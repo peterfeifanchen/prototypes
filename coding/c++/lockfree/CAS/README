@@ -63,9 +63,7 @@ following API:
 Implementation
 ========================================================================================
 Use atomic_compare_exchange_weak/strong to show ABA problem.
-Use atomic_compare_exchange_weak/strong to redo example.
 Use atomic_exchange to do a mutex lock.
-Use atomic_exchange to redo example.
 
 References
 ====================================================================================

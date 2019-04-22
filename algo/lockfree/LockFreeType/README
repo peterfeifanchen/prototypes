@@ -1,0 +1,60 @@
+Memory Barriers
+====================================================================================
+
+Thread 1                  Thead 2
+	Read X										Read Y
+	Write Y										Write X
+
+Because there is no memory dependency between x and y. Therefore memory operations
+can be reordered by compilers or the architecture. For compilers, this is due to 
+optimizations. If it is architecture, this is due to the memory hierarchy. When 
+thread 1 running on cpu 1 modifies Y, depending on the cache-coherence of the arch,
+this may or may not reach thread 2 running on cpu 2. 
+
+NOTE: Reordering will not occur if run on the same CPU, but will occur if run on 
+different CPU of same node or CPU on different nodes. Run reordering/reordering.cpp
+with "make reorderingSAMECPU" for example. 
+
+A full memory barrier will issue a "sync"-like instruction to the arch which 
+produces sequential consistency. A lighter "lsync"-like instruction to the arch 
+would produce acquire_release semantics.
+
+C++ atomics support:
+	memory_order_relaxed
+	memory_order_consume
+	memory_order_release - PowerPC (lwsync), ARM (dmb), x86_64 (mfence)
+	memory_order_acquire
+	memory_order_acquire_release
+	memory_order_seq_cst
+
+	asm volatile( "" ::: "memory" ) - prevent compiler reordering
+	asm volatile( "mfence" ::: "memory" ) - full mfence memory barrier (sync)
+    See reordering/reordering.cpp "make reorderingMFENCE" for example.
+
+Acquire/Release Semantics
+====================================================================================
+Acquire-Semantics: prevent memory re-ordering of a read operation with read/write
+				   operation of those that follow it in program order
+Release-Semantics: prevent memory re-ordering of a write operation with read/write
+			       operation of those that precede it in program order
+
+Even with acquire-release semantics, a preceding write can still be moved after a 
+read. Most arch provide an expensive operation called "sync" to prevent that. This
+operation is expensive because it most likely flushes the entire pipeline of a CPU
+until the write operation is complete.
+
+Happens-before relationship between threads are established on a shared variable if
+one thread release and another acquires. The release write will be visible to the
+acquire. 
+
+
+References
+====================================================================================
+1. https://www.youtube.com/watch?v=c1gO9aB9nbs
+2. https://www.youtube.com/watch?v=CmxkPChOcvw
+3. https://kukuruku.co/post/lock-free-data-structures-memory-model-part-3/
+4. https://preshing.com/20120612/an-introduction-to-lock-free-programming/
+5. https://preshing.com/20120515/memory-reordering-caught-in-the-act/
+6. https://preshing.com/20121019/this-is-why-they-call-it-a-weakly-ordered-cpu/
+7. https://preshing.com/20130823/the-synchronizes-with-relation/
+8. https://preshing.com/20131125/acquire-and-release-fences-dont-work-the-way-youd-expect/
