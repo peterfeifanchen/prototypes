@@ -1,0 +1,122 @@
+sudo tcpdump -i eth0 -nn -s0 -v port 80 proto 17
+
+-i       interface
+-nn      (n) do not resolve hostnames
+         (nn) do not resolve hostnames or ports
+         useful when capturing large amounts of data (name resolution slows down capture)
+-s0      size of packets to capture, (0) unlimited 
+         (pull all traffic, e.g., download of large binaries)
+
+
+Output:
+-A       ascii output
+-X       ascii & hex output
+-xx -XX  very readible form
+-v       verbose
+-w FILE  write to a capture file, if filename has format of strtime(), it can be used
+         with -G to rotate the name of file after N seconds.
+-l       line mode (for piping, e.g., grep)
+-c N     exit after receiving N packets
+-C SIZE  if current filesize > SIZE, close current capture file and open a new one
+-G N     rotate file name after N seconds
+-t       no timestamp
+
+Filters:
+port 80  port filter
+proto 17 proto filter (e..g, also udp would be equivalent)
+host IP  IP filter for src and dst
+src IP   IP filter for src
+dst IP   IP filter for dst
+operator and, &&, or, ||, not, !
+
+===========================================================================================
+EXAMPLES
+============================================================================================
+1. sudo tcpdump -nn -A -s1500 -l | grep "User-Agent:"
+   sudo tcpdump -nn -A -s1500 -l | egrep -i 'User-Agent:|Host:'
+Extracts HTTP User-Agent from HTTP request header. In case of egrep, extract multiple tags.
+
+2. sudo tcpdump -s 0 -A -vv 'tcp[((tcp[12:1] & 0xf0) >> 2):4] = 0x47455420'
+
+Going deep on the filter we can specify only packets that match GET.
+   var[n] -> nth byte of var
+   var[n,c] -> c bytes of var starting at offset n
+   & -> bitwise AND
+   >> -> bitwise shift right
+tc[12:1] -> Data Offset Field (DOF)
+tc[12:1] & 0xf0 -> First four bits of DOF
+tc[12:1] & 0xf0 >> 2 -> DOF is in 32-bit words, so number of bytes need to be multiplied by 4 or 
+                        left-shifted by 2. However to get the top 4 bits, we need to right shift
+                        by 4. Hence, we rightshift by 2. This gets us the size of TCP header in
+                        bytes.
+tcp[ TCP headersize : 4 ] -> Get the first 4 bytes after the TCP header, which should = 0x47455420.
+                             The numerical encoding in ascii bytes for GET (0x47, 0x45, 0x54, 0x20).
+
+3.  sudo tcpdump -s 0 -v -n -l | egrep -i "POST /|GET /|Host:"
+
+Print the lines for POST, GET, Host. Notice we do not filter by port and will capture HTTP on any
+port.
+
+4. sudo tcpdump -s 0 -A -n -l | egrep -i "POST /|pwd=|passwd=|password=|Host:"
+   sudo tcpdump -nn -A -s0 -l | egrep -i 'Set-Cookie|Host:|Cookie:'
+Extract passwords.
+Extract cookies.
+
+5. sudo tcpdump -n icmp
+   sudo tcpdump 'icmp[icmptype] != icmp-echo and icmp[icmptype] != icmp-echoreply'
+Capture ICMP packets.
+Capture ICMP packets that are not ECHO or REPLY
+
+6. sudo tcpdump -nn -l port 25 | grep -i 'MAIL FROM\|RCPT TO'
+
+Extract email recipients (SMTP/POP3 on port 25).
+
+7. sudo tcpdump dst port 123
+
+Extract NTP(port 123) query and response.
+
+8. sudo tcpdump -nn -v port ftp or ftp-data
+
+Extract Passive and active sessions. Can grep for USER, PASS, LIST, CWD, PASSIVE.
+
+9. tcpdump  -w /tmp/capture-%H.pcap -G 3600 -C 200
+
+Extract dump to file and rotate file every hour (-G 3600)
+
+10. tcpdump -nn ip6 proto 6
+
+Extract ipv6.
+
+11. tcpdump 'tcp[tcpflags] & (tcp-syn|tcp-fin) != 0 and not src and dst net localnet'
+    tcpdump 'tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)'
+
+Extract TCp syn/fin packets for all non-local IP. 
+Extract HTTP packets except for TCP syn/fin/ack packets. 
+
+12. sudo tcpdump -i wlp58s0 -s0 port 53
+
+Extract DNS. 
+
+13. ssh root@remotesystem 'tcpdump -s0 -c 1000 -nn -w - not port 22' | wireshark -k -i -
+
+Pipe remote tcpdump to local wireshark for debug. NOTE: we do not capture port 22 as this is
+our ssh connection. Pass -c N to have tcpdump shut off after N captures, otherwise, you'll have
+to kill wireshark on the local side to kill the remote tcpdump session. 
+
+14. sudo tcpdump -nnn -t -c 200 | cut -f 1,2,3,4 -d '.' | sort | uniq -c | sort -nr | head -n 20
+
+Sort by IP address and order by count of their occurance (e.g., useful for top IP hosts by traffic)
+
+15. sudo tcpdump port http or port ftp or port smtp or port imap or port pop3 or port telnet -l -A | egrep -i -B5 'pass=|pwd=|log=|login=|user=|username=|pw=|passw=|passwd=|password=|pass:|user:|username:|password:|login:|pass |user '
+
+Dump all plaintext passwords. Egrep uses -B5 to dump previous 5 lines to match for context.
+
+16. sudo tcpdump -v -n port 67 or 68
+
+Extract DHCP request (port 67) and replies (port 68)
+
+
+
+
+Reference:
+1. https://hackertarget.com/tcpdump-examples/

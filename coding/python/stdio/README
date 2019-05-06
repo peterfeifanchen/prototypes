@@ -1,0 +1,3 @@
+Capturing stdout/stdin/stderr
+-----------------------------
+We launch a subprocess. We feed it stdin and read its stdout.  

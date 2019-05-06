@@ -1,0 +1,8 @@
+--- a_patch	2019-04-29 14:37:00.538315649 -0700
++++ b	2019-04-29 14:37:11.678078699 -0700
+@@ -1,3 +1,3 @@
+-a big bad red fox
++a red big bad red fox
+ jumped onto a fence
+-in holland
++holland

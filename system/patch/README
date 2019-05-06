@@ -1,0 +1,10 @@
+diff -u a b &> patch1
+patch -pN < patch1 
+
+-pN  strip levels in dir name
+
+Example: We create two files a_patch and b. Generate a diff and then patch b to a_patch.
+
+diff -u a_patch b &> patch1
+patch -p0 < patch1 (This patches b->a_patch and produces b and b.orig)
+
