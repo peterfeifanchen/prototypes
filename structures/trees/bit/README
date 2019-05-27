@@ -1,0 +1,39 @@
+Binary Index Trees (Fenwick Trees) are useful in calculating the sum of an array
+from index 0...x where x < N, the size of the array. It performs the summation in
+O(logN) time at the cost of updates to array[i] also taking O(logN) rather than O(1).
+
+It constructs a tree-like object using array as its backing store and supports two 
+operations: 1) getSum( int i ) and 2) update( int i, int val ). The tree is built
+such that a node's subtrees are subsums over indices that are powers of 2. An 
+analogy is that 19 = 16 + 2 + 1. Similarly:
+
+   sum[index=19] = sum[index=16] + sum[index=2] + sum[index=1]
+       10011           10000           10010      10011
+                       0...16          16...18    18...19
+
+Where a subtree of index 16 is the sum of indices 16...i. 
+
+In getSum( int i ), it obtains the sum of the array from index 0 to i. This starts
+at index i and iterates up the BIT tree. In this method, parent node is calculated
+by removing the last set bit ( index -= index & (-index) ). At each step, adding the
+sum.
+
+In update( int i, int val ), it increments array[i] with val. It then iterates 
+across the BIT, incrementing each subsequent node by val. Subsequent nodes are 
+calculated by adding the last set bit ( index += index & (-index) ) until index
+is greater than N.
+
+   sum[index=16] += 5 => sum[index=32] += 5 => sum[index=64] += 5 ...
+       1 0000                10 0000            100 0000
+
+For ease of implementation using these binary numbers, the root node is a dummy node
+with no significance, branching out to node indices that are powers of 2. These 
+nodes than branch further to nodes that are are powers of 2 that are less than the
+node index and so on....
+
+References:
+1) https://www.geeksforgeeks.org/binary-indexed-tree-or-fenwick-tree-2/
+2) https://www.geeksforgeeks.org/two-dimensional-binary-indexed-tree-or-fenwick-tree/
+3) https://www.geeksforgeeks.org/order-statistic-tree-using-fenwick-tree-bit/
+4) https://www.geeksforgeeks.org/maximum-sum-increasing-subsequence-using-binary-indexed-tree/
+5) https://www.geeksforgeeks.org/binary-indexed-tree-range-updates-point-queries/
