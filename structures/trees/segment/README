@@ -1,0 +1,19 @@
+Segment trees are a full binary tree of 2n-1 nodes for n node array. Each parent
+node is the f() of the ranges of its leaf nodes. The leaf of the tree are the 
+array nodes. The f() can be sum(), max(), min(), xor() or any operation that wants
+to search a range between l and r. 
+
+Like heaps and other trees, segment trees can be implemented as an array at the cost
+of extra memory for empty nodes. Each child is at 2*i+1 and 2*i+2 and parent is at
+(i-1)/2. A segment tree is full if the number of elements were a power of 2.
+
+A segment tree is able to both query a range and update a range in O(LogN) time.
+
+Compared to BIT trees which takes N nodes of memory, segment tress takes the
+nearest power of 2 of 2*N-1 in memory. 
+
+Reference:
+
+1. https://www.geeksforgeeks.org/segment-tree-set-1-sum-of-given-range/
+2. https://www.geeksforgeeks.org/segment-tree-set-1-range-minimum-query/
+3. https://www.geeksforgeeks.org/segment-tree-set-3-xor-given-range/

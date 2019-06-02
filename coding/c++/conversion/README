@@ -1,0 +1,35 @@
+Implicit conversion is when a type T1 is used in a context that does not accept T1
+but accepts another type T2. In such cases, the compiler may be able to find a 
+constructor or explicit converter that transforms T1 to T2.
+
+Implicit conversion works in the following scenarios:
+   1) There is a converting constructor. This enables conversion from the parameter
+      type to the class object. Every constructor is a converting constructor, but
+      this behavior can be overwritten by using explicit. An explicit constructor
+      would not allow:
+         
+         class A{
+            explicit A( int a ) : a_(a) {}
+         }
+
+         A a = 2;
+
+      This prevents mistakes, especially in the case of an int->string conversion
+      where someone may write:
+
+         class string_buffer { 
+            string_buffer() {} 
+            string_buffer(size_t const size) {} 
+         }
+
+         string_buffer sb = 'c';  // <---- will not work anymore with explicit.
+
+   2) There is a member function that is a conversion operator for the class. 
+      For example:   
+         explicit operator bool() const {
+            // code here that returns a bool
+         }
+
+Implicit conversions can be triggered when evaluated inside control flow logic such
+as if, while, switch statements, by static_cast<T>(), copying objects or parameter
+passing to functions. 

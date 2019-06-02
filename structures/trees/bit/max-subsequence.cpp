@@ -48,7 +48,7 @@ int main() {
    for( auto it = uniqueVal.begin(); it != uniqueVal.end(); it++ ) {
       size++;
       uniqueVal[it->first] = size;
-      //std::cout << it->first << " " << size <<  std::endl;
+      std::cout << it->first << " " << it->second <<  std::endl;
    }
 
    //std::cout << "size: " << size << std::endl;
