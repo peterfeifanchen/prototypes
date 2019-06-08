@@ -1,0 +1,22 @@
+cProfile provides a per-function call breakdown of total time spent and
+cumulative time (all functions called by the function) in a function. A python
+script can be profiled by:
+
+   python -m cProfile -o [output_file] -s [sort_order] python.script
+
+The output file can then be read by:
+
+   import pstats
+   p = pstats.Stat( output_file )
+   p.strip_dirs().sort_stats( [PARAM] ).print_stats()
+
+These methods may be chained together. Others can be found in the reference manual,
+but some highlights in addition to the ones above include:
+
+   print_callers
+   print_callees
+   add
+
+Reference:
+
+https://docs.python.org/2/library/profile.html

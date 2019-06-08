@@ -1,0 +1,51 @@
+Virtual functions in c++ are late-binding. This means that which class's method it
+calls is determined by the type of the object at runtime, and not at compile time.
+That is to say if you had:
+   Parent *p;
+   ...some code that sets p to a Child() class
+   p->virtualfunc()
+The called function would be the virtualfunc() of whichever child class you
+assigned to p. 
+
+The compiler achieves this by building a VTABLE for each base class
+and derived class that has a virtual function. The VTABLE contains one entry for 
+each virtual function, which points to its own overloading derived function or to
+its parent function. A pure virtual function is assigned NULL. Each base or derived
+class contains a VPTR which is the pointer given on assignment, e.g.:
+   
+   Parent *p = new Child() // p points to the VPTR of Child which points to the 
+                           // VTABLE of child
+
+It is this VPTR->VTABLE->virtual func() indirection that implements the late-binding
+and why destructors must be virtual (so that there is an entry in the VTABLE to 
+direct it to the right derived class destructor and not the parent's).
+
+A class is made abstract (cannot be instantiated) if it contains a pure virtual 
+function:
+
+   virtual func() = 0;
+
+Any child class will also be implicitly abstract if it does not provide a full 
+implementation. 
+
+A regular virtual function can be defined as:
+
+   virtual func() {}
+
+And a parent's virtual function can be called by:
+
+   func() {
+      Parent::func()
+   }
+
+NOTE: C++ specification specifies that if a base class has a virtual function, to
+guarantee that its destructor is called, the destructor of the base class must also
+be virtual. By doing that, the destructor is put in the VTABLE.
+
+NOTE: When calling constructor or destructor of the child class (parent class has
+a virtual destructor), both the parent's constructor and destructor would be called.
+
+NOTE: Unfortunately it doesn't really make semantic sense to have virtual 
+constructors. However the work-around is to have the constructor call a virtual
+function which performs the initialization (although this would not work for 
+variables such as references that must be down in the initializer list).

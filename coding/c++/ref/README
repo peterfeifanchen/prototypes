@@ -1,0 +1,8 @@
+References vs. pointers
+
+1) A pointer can be re-assigned, a reference cannot be re-bound
+2) A pointer points to a memory location, a reference is a memory location
+3) No NULL for references, it must refer to something. As a member of a class, it
+   must be initialized in the constructor initializer list. Likewise, it may be
+   safer, as a reference does not need to be tested against NULL
+4) . vs. -> for access

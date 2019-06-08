@@ -16,8 +16,9 @@ func main() {
 	// Are maps passed by reference?
 	mOriginal := make(map[string][]byte)
 	mapPassByRef(mOriginal)
-	fmt.Println("newkey1:", string(m["newkey1"]))
+	fmt.Println("newkey1:", string(mOriginal["newkey1"]))
 
 	mOriginal = mapReturnByRef()
-	fmt.Println("newkey2:", string(m["newkey2"]))
+	fmt.Println("newkey1:", string(mOriginal["newkey1"]))
+	fmt.Println("newkey2:", string(mOriginal["newkey2"]))
 }

@@ -1,0 +1,28 @@
+New/Delete vs. Malloc/Free
+====================================================================================
+New and Delete would call the constructors and destructors. 
+Malloc/Free are C constructs and would not.
+
+Always remember to free for malloc and delete for new. 
+
+Placement New
+====================================================================================
+If the memory has already been allocated, you can call new with that specific
+memory location:
+   
+   Object* myObject = new (buffer) Object(...);
+
+And to delete it, you have to explicitly call its destructor and then free():
+
+   myObject::~myObject();
+   free( buffer );
+
+Operator New
+====================================================================================
+New is a keyword of C++ and its behavior cannot be changed (e.g., allocate memory,
+call constructor). However to allocate memory, it calls the new operator which has
+the signature:
+
+   void* operator new( size_t size )
+
+This new operator can actually be overriden with your own custom allocator.
