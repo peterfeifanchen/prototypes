@@ -1,0 +1,26 @@
+Basic trie provides O(L) retrieval where L is the length of the item being
+retrieved. It is constructed by having each element of the L-length item as
+a node in the trie. The span (number of children) of each node of the tree is
+its alphabet. 
+
+Tries are better for retrieval as O(L) complexity is better than the O(LlogN)
+complexity of a balanced trie ( O(L) for equal compare, log(N) for number of
+words). Further, it is better than hash tables (also O(L) complexity to hash
+the length L item into a hash table index) as it allows for partial retrievals.
+This is something balanced trees nor hash tables can do.
+
+Tries provide efficient ways to find and count items with matching prefixes, 
+suffixes and a single missing element. 
+
+In terms of add, delete and search, a basic trie is O(L) while its storage 
+requirements are O(L*|alphabet|).
+
+In this example, we provide a basic trie on lower-case English alphabet that
+provides:
+   
+   addWord( word )
+   deleteWord( word )
+   isWord( word )
+   countWords( prefix )
+   findWords( prefix )
+   spellcheck( word )

@@ -1,0 +1,40 @@
+Greatest Common Divisor
+
+Euclid algorithm is where you take the remainder of the larger number divided by the
+smaller number. Then successively doing that until the remainder reaches 0. The last
+divisor is then the GCD.
+
+Given two numbers a and b:
+
+   a % b = n1b + a1   (a1 < b)
+
+If a1 == 0 then obviously b is the greatest common divisor of a and b.
+
+Inductively if a1 > 0 then:
+
+   b % a1 = n2a1 + b2
+
+If b2 == 0 then a1 is a multiple of b and thus a % b = n1b + n2a1 == 0. 
+This means that when the remainder is 0, the divisor is a divisor of a and b.
+
+To prove that this is the greatest divisor, we assume a = qb + r (a>b) and the
+greatest common divisor is g
+
+Lemma1: gcd(a,b) == gcd(b,r). If this is true, then
+gcd(a,b) == gcd(b,r) == ... = gcd( g, 0 ) == g 
+
+Proof: a = qb + r => r = a - qb = ng - mg = (n-m)g. Since a>b, then n-m > 0. 
+This means that r is divisible by gcd(a,b). This means that the gcd(b,r) is at least
+as large as g, the gcd(a,b). 
+
+   gcd(a,b) <= gcd(b,r)
+
+Separately, if gcd(b,r) is divisible by b and r, then a = qb + r must also be
+divisible by gcd(b,r). This means
+   gcd(a,b) >= gcd(b,r)
+
+Thus, gcd(a,b) == gcd(b,r)
+
+Therefore, the first remainder operation that gives you 0, is the largest
+divisor that could be divided by a and b.
+

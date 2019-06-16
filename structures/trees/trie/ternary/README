@@ -1,0 +1,12 @@
+A trie's span (number of children) is its entire alphabet. This is inefficient for
+storage if the word space is sparse. In ternary tree, there is only 3 children:
+less than the node element, equal to the node element and larger than the node
+element. 
+
+However, in doing this, we sacrifice O(L) complexity for O( logN ) complexity with N
+being the number of items.
+
+In terms of search, delete and add complexity, it is same as a balanced tree in the
+worst case scenario (height of tree) and same as trie in best case scenario 
+(length of the word). 
+

@@ -1,0 +1,33 @@
+See exception.cpp for common use cases. When an exception is thrown, stack unwinding
+occurs. This means all automatic variables that were created between the try scope to
+the throw expression will have its destructors called in the right order 
+(reverse of instantiation). 
+
+NOTE: An exception handler will only catch exceptions thrown in its own try block,
+not exceptions thrown at an outer scope.
+
+A class in c++ can offer several types of exception safety:
+
+1) No throw guarantee - all exceptions will be handled internally
+2) Strong exception guarantee - no side effects (transaction semantics, 
+   commit and rollback)
+3) Basic - no memory leaks
+4) No guarantees
+
+One particular about exceptions in c++ is that destructors cannot throw (they are
+implicit noexcept). While some are militant about that, some simply say throw but
+do not let it propagate out of the destructor. This has the following repercussions:
+
+1) All STL-containers lose their exception safety guarantees
+2) If an exception propagates out of a destructor, therey may be 2 exceptions occuring
+in parallel resulting in a call to std::terminate
+3) If an exception propagates out of a destructor that is implicitly marked with 
+noexcept, then std::terminate is called
+
+If a destructor is explicitly tagged with noexcept(false), you can do magical things
+with throwing from destructors. 
+
+Reference:
+1) https://akrzemi1.wordpress.com/2011/09/21/destructors-that-throw/
+2) https://www.kolpackov.net/projects/c++/eh/dtor-1.xhtml
+3) https://stackoverflow.com/questions/130117/throwing-exceptions-out-of-a-destructor

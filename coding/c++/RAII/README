@@ -1,0 +1,9 @@
+RAII is a programming pattern where you use the automatic destructor call on leaving a 
+scope to safely release acquired resources. In this the resource is acquired at 
+instantiation in the constructor. Hence this is called resource acquisition is 
+instantiation.
+
+This guards unexpected errors or exceptions from being thrown that would end up stranding
+the clean up of some resource. Otherwise, to replicate the same behavior, you would have 
+to have complicated goto fail control routines to cleanup allocated resources should some
+failure occur during a complicated routine. 
