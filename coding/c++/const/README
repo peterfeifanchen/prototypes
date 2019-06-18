@@ -1,0 +1,9 @@
+Const makes an object (all its members) immutable. It's value is whatever it is at
+time of assignment/initializer list. 
+
+A const_cast< type* > can be used to cast away const-ness of a pointer. However it is
+undefined behavior to modify an value declared const by removing its const by 
+const_casting. Using const_cast, you must convert const T to T, otherwise, the
+compiler will throw an error.
+
+Further, when const_cast an volatile, the volatile is also casted away.
