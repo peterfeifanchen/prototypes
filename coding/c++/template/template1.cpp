@@ -1,5 +1,7 @@
 #include<iostream>
 
+// This is a basic template instantiation.
+
 template< typename T >
 class Foo {
    typedef T value_type;
