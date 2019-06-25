@@ -1,0 +1,141 @@
+Atomic Operations
+====================================================================================
+This can be achieved at the system level by hardware support. In single-threaded or
+single-core systems, this can be achieved by disabling interrupts. In multi-core 
+systems, this is usually achieved by expensive operation that 1) locks memory bus,
+2) flushes other core's cache and 3) CAS operations. In either case, this requires
+system calls into the kernel for these operations.
+
+For lighter parallelism (e.g., coroutines: user-level threads that map to a single
+kernel thread), synchronization of shared user-space variables can be achieved by
+atomic operations on machine words (this can be used to implement a simple lock
+without hardware assistance and used to provide atomicity to larger structures.
+While most coroutines are not pre-emptable by its user-level scheduler (e.g., 
+this would require kernel level support to set up interrupts, but even then it would
+not make sense as interrupts are a system-level resource and not unique to a single
+thread ), for performance, some still do yield() when having to obtain resources
+(e.g., disk reads, network I/O) to see if greater parallelism can be obtained.
+
+Locks 
+====================================================================================
+Lock synchronization primitive consists of:
+   handles (variable name, etc., not a system-wide resource)
+   lock() -> atomically set bool to true
+   unlock() -> atomically set bool to false
+It is applied across threads of a single process to provide exclusive access to 
+shared data (all threads have private stacks, but share heap).
+
+Variations include:
+   1) RW lock - a shared mutex in c++, any number of reader locks, single exclusive
+                writer lock. A read lock can be acquired as long as there are only
+                reader lock. A write lock can only be acquired when there are no 
+                other locks. This provides a perpetual preference to readers that
+                can cause writer starvation. To avoid writer starvation, an attempt
+                to obtain an exclusive lock need to block (e.g., set a condition
+                flag) future attempts to acquire read locks that occur after the
+                write lock attempt. When the lock becomes free, the write lock then
+                becomes the only one that can acquire the lock and releases the
+                condition. If there are alot of writers, then RW lock may not be the
+                right choice as it provides little benefit over a normal lock.
+   2) Spinlock - spin in a while loop to atomically check if a lock is available.
+                 Does not put the thread to sleep. Inefficient for user-level code,
+                 but useful in the kernel.
+
+Mutex
+====================================================================================
+Mutex synchronization primitive consists of:
+   names (system-wide resource)
+   lock() -> atomically set bool to true
+   unlock() -> atomically set bool to false
+   waitQueue -> list of threads waiting on the resource
+
+Mutex is an operating system concept that applies generally across multiple processes
+(note the difference with locks which are exclusive to a single process). 
+Hence mutex has names. 
+
+Semaphores
+====================================================================================
+Semaphore synchronization primitive consists of:
+   P() -> atomically decrements a resource, puts thread to sleep if resource == 0
+   V() -> atomically increments a resource, wakes up thread to contend if resource
+          was 0
+   waitQueue -> list of threads waiting on the resource
+   count -> number of available resources
+
+Semaphores is a generalization of a mutex which allow N simultaneous accesses.
+While that is a commonly held belief, there are rarely identical resources. An
+example is a shop with two bathrooms and two keys. While bathrooms may appear as an
+identical resource, when you are given a key, you do not know which bathroom it 
+opens with any metadata that indicate such information most likely to be protected
+by a mutex.
+
+More correctly, especially on embedded systems, it maybe more beneficial to think of
+a semaphore as one thread signalling and another thread waking up to perform some
+task in a NON-BLOCKING way as opposed to a mutex that locks/releases a critical 
+section and run into pesky problem of deadlock. In a way P() and V() is like wait()
+and signal() of condition variables than mutex lock() and unlock(). Semaphores are
+one abstraction that can be safely used to trigger events from an interrupt service
+routine (while the other is releasing a mutex, it is questionable as to why the
+interrupt service routine was entered into with the mutex held in the first place).
+
+Further, this conceptual distinction is illustrated by priority inversion. Priority
+inversion occurs when mutex are used with pre-emptive priority scheduling in real-
+time systems. A lower priority thread sharing a mutex with a higher priority thread
+may acquire the mutex and then be pre-empted by a medium priority thread. At this
+point the higher priority thread may be put to sleep when attempting to acquire the
+mutex, causing priority inversion with unbounded run-away on completion time of the
+high-prioirty thread which is now dependent on the execution length and period of 
+the medium priority thread until the lower priority thread can get a chance to
+execute and release the lock. The work around with semaphores require no abstraction
+changes (e.g., have count = to number of simultaneous threads), but to fix it for
+mutex, it would require either changes to the mutex abstraction:
+
+1) Priority Inheritance - temporarily raise the priority of the acquiring thread to
+the maximum of the thread or the resource mutex until the mutex is released. The
+thread priority change must preceed the acquisition and succeed the release.
+
+2) Priority Ceiling - temporarily raise the priority to the priority of the highest
+thread priority that may also acquire the mutex. In this case, we would not even 
+require a mutex as by raising it to such a priority, it cannot be pre-empted by any
+other thread in its critical secion.
+
+Condition Variables
+====================================================================================
+Condition Variable sychronization primitive consists of:
+   wait() - it must in one atomic action: (1) release the 
+            lock and 2) put thread on waitQueue
+   signal() - choose one thread to unblock from waitQueue
+   broadcast() - unblock all threads from waitQueue to contend for lock
+   waitQueue - list of threads waiting on some set of conditions
+   predicate - conditions to evaluate to true
+
+Condition variables are associated with a mutex/lock. Multiple conditions can be
+applied on a single mutex/lock. The conditions are application logic and must be
+protected by the condition variable's lock/mutex. Any thread must first acquire this
+lock/mutex to check whether condition evaluates to true. See Monitor, which combines
+the lock/mutex abstraction with condition variable abstraction into a single 
+abstraction.
+
+Monitors
+===================================================================================
+Monitor synchronization primitive consists of:
+   lock/mutex/semaphore - to atomically access some conditions
+   condition variables - the condition variable for the lock
+   wait( lock/mutex, condition variable ) - call wait on atomic variable which 
+      releases the lock and puts thread to sleep. On wake-up, acquire lock again. 
+   signal( lock/mutex, condition variable ) - acquire lock, 
+      wake-up one thread, release lock.
+
+Monitors are a higher layer abstraction than condition variables and mutex/lock. It
+is typically used to build thread-safe classes (only a single thread modifies a
+class members at a time, etc...).
+
+The lock must be acquired before evaluating the predicate or signal wake-ups may be
+missed and the thread never re-awoken. 
+
+References
+====================================================================================
+1) https://people.eecs.berkeley.edu/~kubitron/courses/cs162-F06/hand-outs/synch.html
+2) https://stackoverflow.com/questions/2332765/lock-mutex-semaphore-whats-the-difference
+3) https://barrgroup.com/Embedded-Systems/How-To/RTOS-Mutex-Semaphore
+4) 

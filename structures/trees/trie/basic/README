@@ -4,7 +4,7 @@ a node in the trie. The span (number of children) of each node of the tree is
 its alphabet. 
 
 Tries are better for retrieval as O(L) complexity is better than the O(LlogN)
-complexity of a balanced trie ( O(L) for equal compare, log(N) for number of
+complexity of a balanced tree ( O(L) for equal compare, log(N) for number of
 words). Further, it is better than hash tables (also O(L) complexity to hash
 the length L item into a hash table index) as it allows for partial retrievals.
 This is something balanced trees nor hash tables can do.
@@ -24,3 +24,9 @@ provides:
    countWords( prefix )
    findWords( prefix )
    spellcheck( word )
+
+Another way to look at tries is to consider a text of length m and a set of
+patterns where their combined length is n. While the naive approach would take 
+O(m*n) to find all the patterns. However, a trie can parallelize the search for
+matching a substring of the text to any of the patterns. Finding all the pattern
+then becomes O(m*Lmax) where you may obtain significant savings if Lmax < n. 
