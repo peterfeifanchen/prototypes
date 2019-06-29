@@ -1,0 +1,41 @@
+Boyer-Moore searches for a SINGLE pattern against a SINGLE string. This is fairly
+useful in situations such as grep.
+
+A naive solution takes O(m*n) where m is the length of the pattern and n the length
+of the text. With Boyer-Moore, it performs the matching process with worse case 
+O(m*n) and best case O(n/m) (where n > m ).
+
+It preprocesses the pattern array and creates an array the size of the alphabet.
+This array is filled with the last index of each letter of the alphabet in the
+pattern.
+
+For example:
+
+   GGGTG (pattern) over the alphabet A, T, C, G would have 
+   pattern array p = 'A': -1, 'G': 4, 'T': 3, 'C': -1
+
+Using this array, Boyer-Moore matches from the end and applies a single heuristic, 
+which is upon a mismatch, it shifts the pattern up the text to the next matching 
+character to the left side of the current position in the pattern. For example:
+
+   AAAAAXXGGGTG (text)
+   GGGTG        (pattern)
+
+As G mismatch A and preprocessed pattern array does not contain 'A' to the left of
+its current pattern position (index 4), it shifts the pattern up the text by 
+m - p['A'] - 1:
+
+   AAAAAXXGGGTG
+        GGGTG
+
+It then proceeds until the current shift s + m <= n is no longer true.
+
+Because Boyer-Moore only tracks the index position of the last ocurring letter, in
+the situation above, it must fall back to the naive approach of advancing the shift
+by one upon mismatch (as opposed to 2 since there is a 'G' to the left of 'T' where
+the mismatch occurs). When operating on a small alphabet with lots of repetitive
+letters, it may be worth it to keep track of possible shift positions of each letter
+as a sorted array. For example, in Boyer-Moore, the next shift is:
+
+   AAAAAXXGGGTG       rather than    AAAAAXXGGGTG
+         GGGTG                              GGGTG

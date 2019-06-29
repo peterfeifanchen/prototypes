@@ -1,0 +1,50 @@
+Aho-Corasick is an automata for outputing all matching patterns against a text. It
+consists of a basic trie with two additional features:
+
+   1) Suffix/Failure links
+   2) Output links
+
+Suffix links are back pointers from any trie node to the longest proper suffix to
+the current pattern. For example, if there are three patterns "sting", "ting" and
+"tin", the longest proper suffix of "sting" is "ting" and the longest proper suffix
+of "ting" is "tin". Therefore, there would a suffix link from 't' in "sting" to 
+'t' in "ting" and from 't' in "ting" to 't' in "tin". 
+
+When pattern matching a prefix "st...", upon failure to match 'i' (the next char),
+you can then traverse up the suffix-link to find the next most likely match until
+you've reached a trie node with NULL suffix-links or suffix-links pointed to the
+root. For implementation sakes, all NULL suffix-links point to the root.
+
+A suffix link is constructed in O(N) where N is the combined length of all the
+patterns in the trie. It is done by a breadth first walk on each child of the root,
+with each child of root having a suffix-link to the root. Each subsequent children
+of the child would look for a parent with a suffix link and check if the suffix link
+has the child's character in its children list. If it does, the child's suffix link
+then points to that, if not, it continues up the suffix link chain until you hit
+the root (perform these operations one last time at root, if still no match, point
+the child's suffix link at root).
+
+Output links are links from any trie node to a pattern along the traversal of its
+suffix links. It is construted during the construction of suffix links using the
+following logic:
+   1) if the suffix link points to the end of a pattern, set output link to point
+      to where the suffix link points
+   2) if not, set the output link to the suffix link node's output link
+All output links are NULL to start.
+
+Together, the reduces the O(mLmax) of a basic trie to O(m + z) where z is the number
+of matching pattern outputs (output-dependent runtime). This is because rather than
+having to do a letter shift to match substrings, Aho-Corasick matches all outputs in
+a single pass over the text of size m, traversing the output links and suffix links
+to find the next output.
+
+Overall the pattern matching algorithm becomes:
+   1) Iterate over text m
+   2) At a trie node, follow its output links till NULL, output any string that is
+      a pattern
+   3) If next letter in m matches, follow the current trie's children and repeat 
+      step 2. If next letter does not match, follow the trie's suffix link and
+      repeat step 3 until it reaches the root.
+
+Reference
+1) http://web.stanford.edu/class/archive/cs/cs166/cs166.1166/lectures/02/Slides02.pdf

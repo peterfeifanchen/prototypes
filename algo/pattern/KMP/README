@@ -1,0 +1,80 @@
+KMP (Knuth-Morris-Pratt) algorithm matches a single string TXT with a single PATTERN
+in worst-case O(N*M) where N is the length of TXT and M is the length of PATTERN and
+best-case O(N). It builds a longest-proper-prefix-that-is-also-a-proper-suffix array lps[i]
+where lps[i] is the length of such a proper-prefix/suffix for the pattern from 0...i.
+
+A proper prefix is any prefix that is not the string itself. Likewise a proper
+suffix is a proper suffix that is not the string itself. This is useful because
+consider the following situation:
+
+   AABAACAABG... (TXT)
+   AABAACAABAA   (PATTERN)
+
+The mismatch occurs at 'G'. The longest-prefix/suffix at index('G')-1 in the pattern
+('AABAACAAB' ) is 'AAB' or length=3. This is because 'AABAACAAB' has a the proper
+prefix 'AAB' and proper suffix 'AAB' and this is the longest one. Hence, upon a 
+mismatch, we can shift the PATTERN to the fourth index 'A' to match the current
+character 'G' again without backtracking to match 'AAB' again (naive solution). This
+is also why we consider only proper prefix/suffix as otherwise it would be a match.
+
+Further consider a match:
+
+   AABAACAABAAG...
+   AABAACAABAA
+   012345678910
+Here the longest-prefix/suffix of the last index is 5 ('AABAA'). Thus upon a match,
+the next character in TXT 'G' would be compared to j=lps[10]=5 (index in PATTERN)
+or 'C':
+   AABAACAABAAG
+         AABAACAABAA
+
+Upon a mismatch here, the longest-prefix/suffix in the PATTERN for j-1 (j=5 currently)
+is 2 (longest-prefix/suffix of 'AABAA'), the next compare then starts at j=2:
+   AABAACAABAAG
+            AABAACAABAA
+
+Upon a mismatch again, the longest-prefix/suffix in the PATTERN for j-1 (j=2 currently)
+is 1 (longest-prefix/suffix of 'AA'), the next compare then starts at j=1:
+   AABAACAABAAG
+             AABAACAABAA
+
+Next, we try to match:
+   AABAACAABAAG
+              AABAACAABAA
+
+If lps[j-1] == 0, then there are no prefix that are also a suffix. In this case there
+are no matches possible. So we set j == 0 to try to find a match, as this may still be
+a possible start sequence. Only when j==0 fail to match, do we advance to the next 
+letter in the text.
+
+Therefore, as the last few example show, we get stuck on 'G' for a while. This is a
+pathological conditions especially when there are many repeating patterns in PATTERN
+(e.g., 'AAAA').
+
+The lps array can be constructed in a single pass over the PATTERN. The aray is 
+initialized to 0. We then construct the longest prefix that is also a suffix 
+dynamically. The longest prefix is L, initialized to 0. If pattern[i] == pattern[L]
+then lps[i], L = L+1. If pattern[i] != pattern[L] then lps[i], L = lps[len-1]. 
+
+         AABAACAABAAD
+ A:             0         L=0
+ AA:            1         L=1
+ AAB:           0         L=0
+ AABA:          1         L=1
+ AABAA:         2         L=2
+ AABAAC:        0         L=0
+ AABAACA:       1         L=1
+ AABAACAA:      2         L=2
+ AABAACAAB:     3         L=3
+ AABAACAABA:    4         L=4
+ AABAACAABAA:   5         L=5
+ AABAACAABAAD:  0         L=0
+
+The longest prefix/suffix is either increasing or the longest prefix/suffix going
+back 1. In the case of 'AABAAD', since 'D' does not match 'C' in 'AABAAC' prefix,
+we know that 'AABAA' matches in both as L=5. Therefore, the longest prefix of
+'AABAAD' is then the longest prefix of 'AABAA' if 'D' matches the last letter of
+'AAB' or we iterate patter[i] == pattern[L] and so on. If L=0, there are no 
+prefix that are also a suffix at this index i.
+
+Unlike Boyer-Moore or Rabin-Karp, KMP is not affected by the size of the alphabet.

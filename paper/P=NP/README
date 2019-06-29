@@ -1,0 +1,23 @@
+A succint summary of P, NP, NP-Complete and NP-Hard can be found here:
+   https://stackoverflow.com/questions/1857244/what-are-the-differences-between-np-np-complete-and-np-hard
+
+P:
+   2-colour graph vertices
+   Shortest-path
+   Knapsack 0/1 
+
+NP:
+   Integer Factorization
+
+NP-Complete:
+   3SAT
+   Minesweeper
+   Vertex-covering
+   Traveling Salesman
+   Knapsack (Decision)
+
+NP-Hard:
+   Halting
+   Knapsack (Optimization)
+
+

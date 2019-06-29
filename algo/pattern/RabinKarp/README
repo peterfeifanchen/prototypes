@@ -1,0 +1,26 @@
+Rabin-Karp is an algorithm that processes a single TEXT agains ta single PATTERN.
+Like Boyer-Moore, its worst case is O(m*n), same as the naive implementation with
+best case scenario of O( m/n ) in case of no match.
+
+Rabin-Karp computes a hash of the PATTERN and hash of all TEXT with rolling window
+of size n (PATTERN). If the hash match, it then compares the letters individually
+to confirm a match.
+
+The hash is computed on a number system with the size of the alphabet |A| as the
+base. Therefore, the hash of "abc" for lower-case alphabet of "a-z" (size=26):
+
+   ('a' - 'a' + 1 ) * 26^2 + ('b' - 'a' + 1 ) * 26^1 + ( 'c' - 'a' + 1 ) * 26^0
+
+This hashing function lends it self to be easily able to dynamically hash a string
+of TEXT[ s+1...s+n+1 ] if TEXT[ s...s+n ] is known:
+
+   hash( TEXT[ s+1...s+n+1 ] ) = |A| * [ hash( TEXT[ s...s+n ] ) - TEXT[s] * 26^(n-1) ] + TEXT[s+n+1]
+
+As this hash can easily wrap and get rather large, we choose a large prime number
+for modulation:
+   hash( x ) = hash( x ) % MOD
+
+Modulation has the property that:
+   a = b + c  then a % MOD = b % MOD + c % MOD
+   a = b - c  then a % MOD = (( b % MOD - c % MOD ) + MOD ) % MOD
+   a = b * c  then a % MOD = b % MOD * c % MOD
