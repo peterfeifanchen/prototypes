@@ -1,12 +1,18 @@
 A trie's span (number of children) is its entire alphabet. This is inefficient for
 storage if the word space is sparse. In ternary tree, there is only 3 children:
 less than the node element, equal to the node element and larger than the node
-element. 
+element. This save space when the distribution of words over the alphabet is not
+even, which in a trie, results in many empty child pointer nodes.
 
-However, in doing this, we sacrifice O(L) complexity for O( logN ) complexity with N
-being the number of items.
+However, in doing this, we sacrifice O(L) complexity where L is the max word length
+for O( logN ) complexity with N being the number of items.
 
 In terms of search, delete and add complexity, it is same as a balanced tree in the
 worst case scenario (height of tree) and same as trie in best case scenario 
 (length of the word). 
 
+A ternary like-ness to a balanced tree provides it with the ability to execute 
+queries such as:
+
+1) Nearest-neighbor: what is the closest larger word to the current word?
+2) Spell-checker to find alternative words.
