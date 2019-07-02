@@ -14,7 +14,7 @@ class TernaryTrie {
       T     val;
       bool  end;
 
-      Node( T _val, Node* _p, bool _end ) : val(_val), parent(_p) end(_end),
+      Node( T _val, Node* _p, bool _end ) : val(_val), parent(_p), end(_end),
       left(NULL), eq(NULL), right(NULL) {}
    
       void newLeftNode( T& _val, bool _end ) {}
@@ -29,6 +29,13 @@ class TernaryTrie {
       UNKNOWN
    };
  
+   enum ParentType {
+      LEFT,
+      EQ,
+      RIGHT,
+      NOT_APPLICABLE
+   };
+
    Node *root;
 
    // Delete Op on a ternary tree is similar to deleting a node in a BST
@@ -132,7 +139,7 @@ class TernaryTrie {
    void printPatterns( Node* curr, std::vector<T> str ) {
       if( curr == NULL ) return;
       std::vector<T> eq( str );
-      eq.push_back( curr->val )
+      eq.push_back( curr->val );
          
       printPatterns( curr->left, str );
       if( curr->end ) std::cout << std::string( eq.begin(), eq.end() ) << std::endl;
@@ -140,49 +147,70 @@ class TernaryTrie {
       printPatterns( curr->right, str );
    }
 
-   void printTernaryTrie( Node *curr, std::string pfx ) {
+   void printTernaryTrie( Node *curr, std::string pfx, ParentType t ) {
       std::cout << pfx;
-      if( !curr->parent ) {
-         std::cout << "└──";
-      } else {
-         if( curr->parent->left == curr ) std::cout << "└──";
-         else if( curr->parent->eq == curr ) std::cout << "├──";
-         else std::cout << "└──";
-      }
+      if( t == EQ ) std::cout << "├──";
+      else std::cout << "└──";
       if( curr == NULL ) {
          std::cout << "(NULL)" << std::endl;
          return;
       }
       std::cout << curr->val << std::endl;
-      printTernaryTrie( curr->left, curr == root ? pfx + "   " : pfx + "|  " );
-      printTernaryTrie( curr->eq, curr == root ? pfx + "   " : pfx + "|  " );
-      printTernaryTrie( curr->right, curr == root ? pfx + "   " : pfx + "|  " );
+      printTernaryTrie( curr->left, curr == root || t==RIGHT ? 
+            pfx + "   " : pfx + "|  ", LEFT );
+      printTernaryTrie( curr->eq, curr == root || t==RIGHT ? 
+            pfx + "   " : pfx + "|  ", EQ );
+      printTernaryTrie( curr->right, curr == root || t==RIGHT ?
+            pfx + "   " : pfx + "|  ", RIGHT );
    }
-
- public:
-
-   Node() : root( NULL ) {}
-
-   void insertWord( std::vector<T> &word ) {
+   
+   void insertWord( std::vector<T> &word, ParentType t ) {
       Node* curr = root;
       Node* parent = NULL;
-      int i = 0
-      while( i < word.size() {
-         if( curr == NULL ) curr = new Node( word[i], parent, i == word.size()-1 );
+      int i = 0;
+      while( i < word.size() ) {
+         //std::cout << word[i] << std::endl;
+         if( curr == NULL ) {
+            curr = new Node( word[i], parent, i == word.size()-1 );
+            switch( t ) {
+            case LEFT: 
+               parent->left = curr;
+               break;
+            case EQ:
+               parent->eq = curr;
+               break;
+            case RIGHT:
+               parent->right = curr;
+               break;
+            default:
+               break;
+            }
+         }
          if( root == NULL ) root = curr;
          
          // If curr node exists, we have to check whether to go down the left,
          // right or eq path
          parent = curr;
          if( word[i] == curr->val ) {
+            t = EQ;
             curr = curr->eq;
             i++;
          } else if( word[i] < curr->val ) {
+            t = LEFT;
             curr = curr->left;
          } else {
+            t = RIGHT;
             curr = curr->right;
          }
       }
+   }
+ 
+   public:
+
+   TernaryTrie() : root(NULL) {}
+   
+   void insertWord( std::vector<T> &word ) {
+      insertWord( word, NOT_APPLICABLE );
    }
 
    void deleteWord( std::vector<T> &word ) {
@@ -190,20 +218,52 @@ class TernaryTrie {
    }
 
    void searchWord( std::vector<T> &word ) {
+      int i = 0;
+      Node* curr = root;
+      while( curr != NULL && i < word.size() ) {
+         if( word[i] < curr->val ) curr = curr->left; 
+         else if( word[i] == curr->val ) {
+            if( i < word.size()-1) curr = curr->eq;
+            i++;
+         } else {
+            curr=curr->right;
+         }
+      }
 
-   }
-
-   void nextWord( std::vector<T> &word  ) {
-
+      std::string w( word.begin(), word.end() );
+      if( curr == NULL ) std::cout << w << " not found!" << std::endl;
+      else if( !curr->end ) std::cout << w << " not found!" << std::endl;
+      else std::cout << w << " found!" << std::endl;
    }
 
    void prefixWord( std::vector<T> &word ) {
+      std::string pfx( word.begin(), word.end() );
+      std::cout << "prefixes of " << pfx << ":" << std::endl;
+      int i = 0;
+      Node *curr = root;
+      while( curr != NULL && i < word.size() ) {
+         if( word[i] == curr->val ) {
+            if( i < word.size()-1) curr = curr->eq;
+            i++;
+         } else if( word[i] < curr->val ) {
+            curr = curr->left;
+         } else {
+            curr = curr->right;
+         }
+      }
 
+      if( curr == NULL ) std::cout << "No words with prefix " << pfx << std::endl;
+      else {
+         // Once we found the node, we can depth first search for valid words using it
+         // as the root.
+         if( curr->end ) std::cout << pfx << std::endl;
+         printPatterns( curr->eq, word );
+      }
    }
 
    void printTernaryTrie() {
       std::cout << "The ternary trie looks like: " << std::endl;
-      printTernaryTrie( root, "" );
+      printTernaryTrie( root, "", NOT_APPLICABLE );
    }
 
    void printPatterns() {
@@ -217,14 +277,8 @@ int main() {
    std::vector<std::string> dict = {
       "fox",
       "focite",
+      "foy",
       "foxes",
-      "fob",
-      "onomotopeia",
-      "steer",
-      "seer",
-      "bees",
-      "eer",
-      "beers",
    };
 
    // Add dictionary words
@@ -238,33 +292,35 @@ int main() {
    t.printTernaryTrie();
 
    // Search for a word
-   /*
    {
-      std::vector<char> tmp{ 'f', 'o', 'x' };
-      t.searchWord( tmp );
+      std::cout << std::endl;
+      std::vector<char> fox{ 'f', 'o', 'x' };
+      t.searchWord( fox );
+      std::vector<char> foxes{ 'f', 'o', 'x', 'e', 's' };
+      t.searchWord( foxes );
+      std::vector<char> foxe{ 'f', 'o', 'x', 'e' };
+      t.searchWord( foxe );
+      std::vector<char> random{ 'r', 'a', 'n', 'd', 'o', 'm' };
+      t.searchWord( random );
+      std::cout << std::endl;
    }
    
-   // Find the next word in the dict for current word (may or may not be a dict word )
-   {
-      std::vector<char> tmp{ 'f', 'o', 'b' };
-      t.nextWord( tmp );
-   }
-   {
-      std::vector<char> tmp{ 'f', 'o', 'b', 's' };
-      t.nextWord( tmp );
-   }
-
    // Find all dict words that has this prefix
    {
-      std::vector<char> tmp{ 'f', 'o' };
-      t.prefixWord( tmp );
+      std::vector<char> fo{ 'f', 'o' };
+      t.prefixWord( fo );
+      std::vector<char> so{ 's', 'o' };
+      t.prefixWord( so );
+      std::cout << std::endl;
    }
+   
    // Delete dictionary words
    {
-      std::vector<char> tmp( dict[4].begin(), dict[4].end() );
-      t.deleteWord( tmp );
+      std::vector<char> fox{'f','o','x'};
+      t.deleteWord( fox );
+      std::vector<char> foxes{'f','o','x','e','s'};
+      t.deleteWord( foxes );
    }
    t.printPatterns();
    t.printTernaryTrie();
-   */
 }

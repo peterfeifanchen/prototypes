@@ -14,5 +14,6 @@ worst case scenario (height of tree) and same as trie in best case scenario
 A ternary like-ness to a balanced tree provides it with the ability to execute 
 queries such as:
 
-1) Nearest-neighbor: what is the closest larger word to the current word?
-2) Spell-checker to find alternative words.
+1) Nearest-neighbor: what are the words within hamming distance D of a word?
+2) Spell-checker: is this a prefix to a valid word? If it is invalid word, what are
+                  the nearest-neighbor valid words within hamming distance D?

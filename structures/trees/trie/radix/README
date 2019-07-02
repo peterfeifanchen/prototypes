@@ -1,7 +1,70 @@
-path-compressed
+Radix-tries are a memory-efficient trie that has been compressed. It produces a trie
+that is significantly less memory intensive with less nodes it would need to iterate
+over for more efficient retrieval. This is achieved at cost of more complicated
+insertion and deletion of patterns from the trie.
+
+Compression can be achieved either via path-compression or level-compression.
+
+A path-compressed trie (Patricia trie, or prefix trie) eliminates redundant nodes 
+that do not have more than one child, choosing instead to "compress" the sequence of
+nodes into a single node (e.g., a->b->c becomes a single node "abc" ). Therefore, on
+insertion, only a single node is created. A patricia trie is a binary compressed 
+trie that uses the binary representation of the alphabet as key values to create
+a path for retrieval (an edge is 0 or 1 with leaf node pointing to the value). In 
+a path-compressed trie, the number of nodes is 2^n-1 where n is the number of 
+leaf nodes. In a Patricia trie, there are only as many nodes as there are keys. 
+Patricia keys removes the need for internal nodes, at the cost of not being able
+to match for prefix, but rather only find whether keys exist or not. This is because
+each Patricia node contains a key and an index to skip to in order to compare and
+evaluate whether to follow the node's 0 branch or 1 branch and level. A search
+terminates when level no longer increases. For example:
+
+   10011,0 -(1)-> 10010, 4
+
+Here the root node '10011' compares the 0'th bit. If it is 1, it goes one level
+deeper to '10010'. At this point, we compare the 4'th bit. If it is 0, we point
+the 0'th edge back to '10010', if it is a 1, we point the 1'th edge to '10011'.
+At this point our level did not increment, and the only possible key to compare
+against is our current node (we iterate over the full key values to compare).
+
+NOTE: here '10011' is the binary form of some alphabet. 
+NOTE: Patricia keys is the extreme version of sacrificing retrieval time for
+      space as it represents more of a cyclic graph with a final need to iterate
+      over the entire key value to acertain whether the key exists or not, with
+      no trie-like ability to evalute prefixes. 
+
+A level-compressed trie compresses an entire level of the trie. It essentially 
+shortens the number of accesses from the root to the leaf of the tree and saves
+on the number of nodes. On a full (densely populated) portion of trie (alphabet 
+size 2) that is 3 levels deep, a normal trie would take 2^(2^3)-1 number of 
+nodes while a level compressed trie would take 2^3 nodes (e.g., basically 
+compressing the 3 levels into 1). Therefore, at a certain level of density, a 
+level-compressed trie may stop making sense and may even end up adding to the 
+number of nodes. To efficiently index based on the first 3 binary values of some 
+key (e.g., 101), the hash based on its alphabet size is then used (e.g., index of 
+the child 101 in root is then 1*2^2+0*2^1+1*2^0=5). Like path-compression, level 
+compression, if applied correctly, can be more efficent and reduce the average path 
+length given a key. The density can be configurable (e.g., 70% of the nodes at this 
+level) when applying level-compression with empty nodes simply assigned a NULL. Use
+of it can be found in Reference (1,2) where it is applied to binary IP routing tables.
+While efficient updates to path-compressed trie is possible, level-compressed tries
+are much more difficult to update (trading slower updates for faster access). This is
+because, a level-compressed trie (for fast access) is best implemented as an array
+(for cache-locality). Therefore to provide access, a table must be built consisting
+of the BRANCH factor (number of letters in the alphabet branched beneath the current
+node) and PTR value (pointer to the index value of the left-most branch of the
+current node).
+
+NOTE: In Reference (1,2) a skip value is included for a level-compressed trie of
+a path-compressed trie. 
+
+While path compression works best on sparsely populated trie, level-compression
+works well on densely populated parts of the trie. 
 
 
-patricia
-
-
-level-compressed
+Reference
+================================================================================
+1) https://github.com/chuckination/lctrie
+2) http://www.drdobbs.com/cpp/fast-ip-routing-with-lc-tries/184410638
+3) https://stackoverflow.com/questions/14708134/what-is-the-difference-between-trie-and-radix-trie-data-structures
+4) https://cw.fel.cvut.cz/old/_media/courses/a4m33pal/paska13trie.pdf
