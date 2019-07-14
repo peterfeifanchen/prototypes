@@ -74,10 +74,10 @@ class BIT2D {
    void construct2DBIT() {
       for( int i = 0; i < v_.size(); i++ ) {
          for( int j = 0; j < v_[0].size(); j++ ) {
-            int sumA = sum( i, j );
-            int sumB = sum( i-1, j );
-            int sumC = sum( i, j-1 );
-            int sumD = sum( i-1, j-1 );
+            //int sumA = sum( i, j );
+            //int sumB = sum( i-1, j );
+            //int sumC = sum( i, j-1 );
+            //int sumD = sum( i-1, j-1 );
 
             updateBIT( i, j, v_[i][j] );
             //std::cout << "[" << i << "][" << j << "]" << std::endl;

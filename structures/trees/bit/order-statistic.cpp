@@ -82,6 +82,7 @@ class BITOS : public BIT<T> {
       
       while( l < r ) {
          int mid = ( r + l ) / 2;
+         std::cout << "mid: "  << mid << " rank: " << rank(mid) << std::endl;
          if( k <= rank( mid ) ) r = mid;
          else l = mid+1;
       }
@@ -101,6 +102,7 @@ int main() {
 
    std::cout << "Rank(20)=" << b.rank(20) << std::endl;
    std::cout << "Rank(310)=" << b.rank(310) << std::endl;
+   std::cout << "Rank(320)=" << b.rank(320) << std::endl;
    std::cout << "The 2nd smallest value=" << b.findKthSmallest( 2 ) << std::endl;
    std::cout << "The 5th smallest value=" << b.findKthSmallest( 5 ) << std::endl;
 

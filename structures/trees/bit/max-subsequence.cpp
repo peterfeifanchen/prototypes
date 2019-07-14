@@ -37,7 +37,7 @@ int sum( int index, std::vector<int>& b ) {
 
 int main() {
    //std::vector<int> seq{1,4,2,8,3,4,7};
-   std::vector<int> seq{1,2,4,5,6}; 
+   std::vector<int> seq{1,2,4,4,5,6}; 
 
    std::map<int, int, cmp> uniqueVal;
    for( auto &v : seq ) {
@@ -55,6 +55,8 @@ int main() {
    std::vector<int> bit( size+1 );
    for( auto &v : seq ) {
       int bitIndex = uniqueVal[v];
+      // NOTE: the fact that we do this here, also makes it a maximum non-decreasing
+      // subsequence.
       bit[bitIndex] = sum( bitIndex, bit ) + v;
       //std::cout << "v: " << v << std::endl;
       //for( auto &b : bit ) {
