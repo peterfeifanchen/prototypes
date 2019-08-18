@@ -81,7 +81,6 @@ Meta.__base__
 #<class 'type'>
 type(Meta)
 #<class 'type'>
-breakpoint()
 
 # slots are the fields in a struct for each magic method define
 # for a class. These struct fields are pointers to each of these

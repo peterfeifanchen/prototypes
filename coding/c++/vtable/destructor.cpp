@@ -18,8 +18,11 @@ int main(void)
 { 
    derived *d = new derived(); 
    base *b = d; 
+   // if base destructor was not virtual, the derived destructor would not be called
+   // here when you delete base *. It would still be called even if virtual was not
+   // specified if you did delete derived * (calls both derived and base 
+   // destructors).
    delete b; 
-   getchar(); 
    return 0; 
 } 
 
