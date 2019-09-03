@@ -1,0 +1,37 @@
+Regex Expressions in Python
+===========================
+
+re.compile( regex, flags ):
+   returns a compiled regex object, if regex has an error, it throws re.error
+
+re.findall( regex, string, flags ):
+   returns all non-overlapping matches as a list of tuples where each tuple is a
+   sequence of match groups.
+
+re.finditer( regex, string, flags ):
+   returns an iterator of match objects
+
+
+Match Object
+   A python match object, it contains group() and groups()
+   group():
+      the complete match to the regex
+   groups( n=0 ):
+      a tuple of capture groups
+
+Regex Expression
+
+NOTE: remember to append r'' to the regex string
+
+()      Capture group
+(?:)    Capture group with no capture (still a group of terms, won't show up in
+        MatchObject.groups() but will show up in MatchObject.group()
+(?<=)   Non-capture group, look-behind match. (?<=abc)def will match def and then
+        emit output only if the previous characters were abc with def ending up in
+        the capture group output
+[]      Set of items
+{n,m}   Number of repeated items {,m} for at most and {n,} for at least
+
+Flags
+
+re.I    case-insensitive match

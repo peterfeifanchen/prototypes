@@ -1,0 +1,7 @@
+How to write a lambda function in python.
+
+f = lambda var1, var2, ... : expression
+f( var1, var2, ... )
+
+It evaluates and returns the result of expression. Expression must be a single line.
+

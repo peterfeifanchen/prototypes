@@ -1,1 +1,4 @@
-WIP
+The map function applies a function f to every item in an iterable t, returning a
+map object.
+
+m = map( func, iterable )
